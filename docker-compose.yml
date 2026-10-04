@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  hpos-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hpos-factory-os
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/prisma/dev.db
+      - SESSION_SECRET=production_super_secret_session_key_hpos_2026
+    volumes:
+      - hpos-data:/app/prisma
+
+volumes:
+  hpos-data:

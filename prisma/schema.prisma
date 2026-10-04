@@ -1,0 +1,509 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ----------------------------------------------------
+// 1. AUTH & ROLES
+// ----------------------------------------------------
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String
+  passwordHash      String
+  isActive          Boolean   @default(true)
+  failedAttempts    Int       @default(0)
+  lockedUntil       DateTime?
+  lastLoginAt       DateTime?
+  employeeCode      String?   @unique
+  assignedMachineId String?
+  dob               DateTime?
+  phone             String?
+  bio               String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  roles          UserRole[]
+  sessions       Session[]
+  auditLogs      AuditLog[]
+  jobCards       JobCard[]
+  scannedCartons CartonLabel[]     @relation("CartonScanner")
+  
+  downtimeLogs      DowntimeLog[]     @relation("DowntimeLogger")
+  shiftHandoversOut ShiftHandover[]   @relation("OutgoingOperator")
+  shiftHandoversIn  ShiftHandover[]   @relation("IncomingOperator")
+  materialScans     MaterialScanLog[] @relation("MaterialScanner")
+  customerId        String?
+  customer          Customer?         @relation("CustomerUsers", fields: [customerId], references: [id])
+  confirmedOrders   SalesOrder[]      @relation("OrderConfirmer")
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model Permission {
+  id       String           @id @default(cuid())
+  resource String
+  action   String
+  roles    RolePermission[]
+
+  @@unique([resource, action])
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  event     String
+  ip        String?
+  metadata  String? // Store JSON as string for SQLite
+  createdAt DateTime @default(now())
+}
+
+// ----------------------------------------------------
+// 2. MASTER DATA
+// ----------------------------------------------------
+model Item {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  name          String
+  category      String       // RAW_MATERIAL, FINISHED_GOODS, PACKAGING, SCRAP
+  uom           String       // Meter, Kg, Nos
+  hsnCode       String?      
+  standardCost  Decimal      @default(0)
+  minStockLevel Float        @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  batches         Batch[]
+  boms            BOM[]            @relation("BOM_FGItem")
+  bomItems        BOMItem[]        @relation("BOM_RMItem")
+  salesOrderItems SalesOrderItem[]
+  workOrders      WorkOrder[]
+  materialScans   MaterialScanLog[]
+  purchaseOrderItems PurchaseOrderItem[]
+}
+
+model Workstation {
+  id         String   @id @default(cuid())
+  code       String   @unique
+  name       String 
+  hourlyRate Decimal  @default(0)
+  status     String   @default("IDLE") // RUNNING, IDLE, MAINTENANCE
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  jobCards       JobCard[]
+  downtimeLogs   DowntimeLog[]
+  shiftHandovers ShiftHandover[]
+}
+
+model Batch {
+  id            String   @id @default(cuid())
+  batchNumber   String   @unique
+  itemId        String
+  item          Item     @relation(fields: [itemId], references: [id])
+  quantity      Float
+  uom           String
+  source        String   // PURCHASE, EXTRUSION
+  parentBatchId String?  
+  createdAt     DateTime @default(now())
+
+  cartons       CartonLabel[]
+  materialScans MaterialScanLog[]
+}
+
+// ----------------------------------------------------
+// 3. BUYING & SUPPLIERS (Slice 2)
+// ----------------------------------------------------
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  gstin     String?  @unique
+  email     String?
+  phone     String?
+  status    String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  purchaseOrders PurchaseOrder[]
+}
+
+model SupplierLead {
+  id          String   @id @default(cuid())
+  companyName String
+  contactName String?
+  material    String?
+  source      String?
+  status      String   @default("NEW") // NEW, CONTACTED, QUALIFIED, REJECTED
+  nextFollowUp DateTime?
+  notes       String?
+  ownerId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PurchaseOrder {
+  id          String   @id @default(cuid())
+  poNumber    String   @unique // BUY-PO-2026-00001
+  supplierId  String
+  supplier    Supplier @relation(fields: [supplierId], references: [id])
+  orderDate   DateTime @default(now())
+  status      String   @default("DRAFT") // DRAFT, SUBMITTED, PARTIAL, RECEIVED, CLOSED
+  totalAmount Decimal  @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  items PurchaseOrderItem[]
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  itemId          String
+  item            Item          @relation(fields: [itemId], references: [id])
+  qty             Float
+  rate            Decimal
+  amount          Decimal
+}
+
+// ----------------------------------------------------
+// 4. INVENTORY & RESERVATION
+// ----------------------------------------------------
+model StockLedgerEntry {
+  id          String   @id @default(cuid())
+  itemId      String
+  batchId     String?
+  warehouse   String   @default("MAIN")
+  quantity    Float
+  movementType String  // RECEIPT, CONSUMPTION, PRODUCTION, TRANSFER, SCRAP
+  referenceId String?  // e.g. PO ID or WO ID
+  notes       String?
+  createdAt   DateTime @default(now())
+}
+
+model StockReservation {
+  id           String   @id @default(cuid())
+  itemId       String
+  salesOrderId String
+  quantity     Float
+  status       String   @default("RESERVED") // RESERVED, CONSUMED, CANCELLED
+  createdAt    DateTime @default(now())
+}
+
+// ----------------------------------------------------
+// 5. SELLING & PRODUCTION
+// ----------------------------------------------------
+model SalesOrder {
+  id              String         @id @default(cuid())
+  orderNumber     String         @unique
+  customerName    String
+  customerId      String?
+  customer        Customer?      @relation("CustomerOrders", fields: [customerId], references: [id])
+  customerGstin   String?
+  transactionDate DateTime       @default(now())
+  deliveryDate    DateTime
+  status          String         @default("DRAFT") // DRAFT, PROFORMA_SENT, CONFIRMED, IN_PRODUCTION
+  approvalMethod  String         // WHATSAPP, EMAIL, PHONE, VERBAL
+  totalAmount     Decimal        @default(0)
+  notes           String?
+  proformaRef     String?
+  proformaSentAt  DateTime?
+  confirmedAt     DateTime?
+  confirmedById   String?
+  confirmedBy     User?          @relation("OrderConfirmer", fields: [confirmedById], references: [id])
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  items         SalesOrderItem[]
+  workOrders    WorkOrder[]
+  deliveryNotes DeliveryNote[]
+}
+
+model SalesOrderItem {
+  id           String     @id @default(cuid())
+  salesOrderId String
+  salesOrder   SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  itemId       String
+  item         Item       @relation(fields: [itemId], references: [id])
+  qty          Float
+  rate         Decimal    
+  amount       Decimal    
+}
+
+model BOM {
+  id          String   @id @default(cuid())
+  name        String
+  fgItemId    String
+  fgItem      Item     @relation("BOM_FGItem", fields: [fgItemId], references: [id])
+  outputQty   Float    @default(1.0)
+  scrapFactor Float    @default(0.025)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  materials BOMItem[]
+}
+
+model BOMItem {
+  id         String @id @default(cuid())
+  bomId      String
+  bom        BOM    @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  rmItemId   String
+  rmItem     Item   @relation("BOM_RMItem", fields: [rmItemId], references: [id])
+  qtyPerUnit Float
+}
+
+model WorkOrder {
+  id              String      @id @default(cuid())
+  workOrderNumber String      @unique
+  salesOrderId    String?
+  salesOrder      SalesOrder? @relation(fields: [salesOrderId], references: [id])
+  fgItemId        String
+  fgItem          Item        @relation(fields: [fgItemId], references: [id])
+  plannedQty      Float
+  producedQty     Float       @default(0)
+  status          String      @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  fgBatchNumber   String?
+  startDate       DateTime?
+  endDate         DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  jobCards JobCard[]
+}
+
+model JobCard {
+  id             String      @id @default(cuid())
+  workOrderId    String
+  workOrder      WorkOrder   @relation(fields: [workOrderId], references: [id], onDelete: Cascade)
+  workstationId  String
+  workstation    Workstation @relation(fields: [workstationId], references: [id])
+  assignedUserId String?
+  assignedUser   User?       @relation(fields: [assignedUserId], references: [id])
+  dieId          String?
+  die            Die?        @relation(fields: [dieId], references: [id])
+  status         String      @default("QUEUED") // QUEUED, ACTIVE, COMPLETED
+  goodQty        Float       @default(0)
+  scrapQty       Float       @default(0)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  inspections   QualityInspection[]
+  downtimeLogs  DowntimeLog[]
+  materialScans MaterialScanLog[]
+}
+
+// ----------------------------------------------------
+// 6. QUALITY MANAGEMENT
+// ----------------------------------------------------
+model QualityInspection {
+  id            String   @id @default(cuid())
+  reportNumber  String   @unique
+  jobCardId     String?
+  jobCard       JobCard? @relation(fields: [jobCardId], references: [id])
+  batchNumber   String
+  status        String   @default("DRAFT") // DRAFT, PASS, REJECT, SCRAP, REWORK
+  sampleSize    Int      @default(5)
+  pinSize       Float?
+  width         Float?
+  legThickness  Float?
+  linearWeight  Float?
+  fitTestResult String? 
+  inspectorName String
+  inspectedAt   DateTime @default(now())
+  reworkNotes   String?
+}
+
+// ----------------------------------------------------
+// 7. PACKING & DISPATCH GATE SCAN
+// ----------------------------------------------------
+model CartonLabel {
+  id                   String       @id @default(cuid())
+  cartonCode           String       @unique 
+  deliveryNoteId       String
+  deliveryNote         DeliveryNote @relation(fields: [deliveryNoteId], references: [id])
+  batchId              String
+  batch                Batch        @relation(fields: [batchId], references: [id])
+  quantity             Float
+  scanned              Boolean      @default(false)
+  scannedById          String?
+  scannedBy            User?        @relation("CartonScanner", fields: [scannedById], references: [id])
+  scannedAt            DateTime?
+  dispatchConfirmed    Boolean      @default(false)
+  dispatchOverride     Boolean      @default(false)
+  dispatchOverrideNote String?
+  createdAt            DateTime     @default(now())
+}
+
+model DeliveryNote {
+  id              String     @id @default(cuid())
+  dnNumber        String     @unique
+  salesOrderId    String
+  salesOrder      SalesOrder @relation(fields: [salesOrderId], references: [id])
+  customerName    String
+  transporterName String?
+  vehicleNumber   String?
+  lrNumber        String?
+  status          String     @default("DRAFT") // DRAFT, DISPATCHED, DELIVERED
+  dispatchedAt    DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  cartons CartonLabel[]
+}
+
+model TallySyncLog {
+  id           String   @id @default(cuid())
+  documentType String 
+  documentId   String
+  exportedXml  String   
+  status       String 
+  syncedAt     DateTime @default(now())
+  errorMessage String?
+}
+
+model DowntimeLog {
+  id            String      @id @default(cuid())
+  workstationId String
+  workstation   Workstation @relation(fields: [workstationId], references: [id])
+  jobCardId     String?
+  jobCard       JobCard?    @relation(fields: [jobCardId], references: [id])
+  reasonCode    String      
+  startTime     DateTime    @default(now())
+  endTime       DateTime?
+  durationMins  Int?
+  notes         String?
+  loggedById    String
+  loggedBy      User        @relation("DowntimeLogger", fields: [loggedById], references: [id])
+}
+
+model ShiftHandover {
+  id                 String   @id @default(cuid())
+  shiftDate          DateTime 
+  shiftType          String   
+  workstationId      String
+  workstation        Workstation @relation(fields: [workstationId], references: [id])
+  outgoingOperatorId String
+  outgoingOperator   User     @relation("OutgoingOperator", fields: [outgoingOperatorId], references: [id])
+  incomingOperatorId String?
+  incomingOperator   User?    @relation("IncomingOperator", fields: [incomingOperatorId], references: [id])
+  scrapGeneratedQty  Float    @default(0)
+  notes              String?
+  status             String   @default("PENDING") 
+  createdAt          DateTime @default(now())
+  acceptedAt         DateTime?
+}
+
+model Die {
+  id                        String    @id @default(cuid())
+  code                      String    @unique
+  name                      String
+  totalRunningHours         Float     @default(0)
+  maintenanceThresholdHours Float     @default(5000)
+  status                    String    @default("ACTIVE") 
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  jobCards JobCard[]
+}
+
+model MaterialScanLog {
+  id            String   @id @default(cuid())
+  jobCardId     String
+  jobCard       JobCard  @relation(fields: [jobCardId], references: [id])
+  scannedBatchId String
+  scannedBatch  Batch    @relation(fields: [scannedBatchId], references: [id])
+  expectedItemId String
+  expectedItem  Item     @relation(fields: [expectedItemId], references: [id])
+  status        String   
+  scannedById   String
+  scannedBy     User     @relation("MaterialScanner", fields: [scannedById], references: [id])
+  scannedAt     DateTime @default(now())
+}
+
+// ----------------------------------------------------
+// 8. B2B CUSTOMERS (Slice 2)
+// ----------------------------------------------------
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  gstin     String?  @unique
+  email     String?
+  phone     String?
+  createdAt DateTime @default(now())
+
+  users       User[]       @relation("CustomerUsers")
+  salesOrders SalesOrder[] @relation("CustomerOrders")
+  followUps   CustomerFollowUp[]
+}
+
+model CustomerFollowUp {
+  id                   String    @id @default(cuid())
+  customerId           String
+  customer             Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  lastOrderDate        DateTime?
+  expectedNextOrderDate DateTime?
+  reminderDate         DateTime?
+  reminderStatus       String    @default("PENDING") // PENDING, COMPLETED, DISMISSED
+  notes                String?
+  assignedUserId       String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+// ----------------------------------------------------
+// 9. SYSTEM & NOTIFICATIONS (Factory Command Center)
+// ----------------------------------------------------
+model Notification {
+  id          String   @id @default(cuid())
+  title       String
+  message     String
+  priority    String   // CRITICAL, ACTION_REQUIRED, UPDATE, SUCCESS
+  status      String   @default("UNREAD") // UNREAD, READ, RESOLVED
+  sourceType  String   // ORDER, MATERIAL, MACHINE, QC, SYSTEM, CUSTOMER, FINANCE
+  sourceId    String?  // Reference to the related record (e.g. SalesOrder ID)
+  actionUrl   String?  // URL to redirect the user when clicked
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

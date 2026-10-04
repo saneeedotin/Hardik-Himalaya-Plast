@@ -1,0 +1,66 @@
+now lets understand how the actual factory works, 
+
+
+
+steps
+
+they get and order from client thru (email whatsapp etc)
+
+then inzemam opens book keeper software to generate a proforma invoice and send it to client
+
+then client confirms 
+
+but before that they check if raw material inventory has sufficient raw materials to make the product (we would need a complete raw material catalogue dashboard inventory)
+
+another thing, there are old clients who always reorderds all the times after a few months weeks etc, we need a place where they could track each one of their clients and track their orders down - status of next expected order should come up, so that they atleast can get notified to contact the client themselves.
+
+Once the order is confirmed, production team starts working.
+
+A deadline is set
+
+production is started
+
+they will generate waste from the current production which will help in creating another impure from of raw material which can be reused
+
+after production theres QC check in much detail, then packaging cartons 
+
+depending on QC, product done. 
+
+QC-> done on paper right now, they need that digitized.
+
+then after everything they store the product (product inventory +)
+
+confirmation with client about the dispatch
+
+dispatch (Product inventory -)
+
+
+
+
+Things he wants in this ERP:
+
+Page for:
+
+1.items 
+2.customer 
+3.supplier (leaderboard Google sheets, for new leads)
+4.buying (could be Raw materials other things)
+5.selling, 
+6.stock (One inventory for Actual Manufactured products and one for raw materials), 
+7.QC sheet for Himalaya plast is attached. QC sheet permanent tab but with changeable names for the client 
+8. machines and its maintenance (6 machines currently) (Keep it on the side for now will circle back to it.)
+
+
+other important stuff:
+1. Material list 
+ Raw Materials (Granule’s)
+A. Hard Granules 
+B. Soft granules 
+C. LD Granules 
+D. Eva Granules 
+E. Black carbon (used for colour)
+F. Grey colour
+G. Cartons 
+And scrap recycle ho ke jo atta hai woh!
+
+attached QCsheet format,
