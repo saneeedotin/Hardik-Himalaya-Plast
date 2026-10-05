@@ -53,7 +53,7 @@ export default async function ShiftHandoversListPage() {
                 handovers.map((h: any) => (
                   <tr key={h.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                      {new Date(h.shiftDate).toLocaleDateString()} - {h.shiftType}
+                      {new Date(h.shiftDate).toLocaleDateString("en-IN")} - {h.shiftType}
                     </td>
                     <td className="px-6 py-4">
                       {h.workstation.name}

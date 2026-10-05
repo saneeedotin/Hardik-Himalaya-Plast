@@ -51,6 +51,11 @@ const menuItems: NavItem[] = [
     icon: ShoppingBag,
   },
   {
+    title: "Purchase Receipts",
+    href: "/buying/receipts",
+    icon: ShoppingBag,
+  },
+  {
     title: "Inventory Ledger",
     href: "/stock",
     icon: Package,
@@ -116,6 +121,21 @@ const accountingItems: NavItem[] = [
     href: "/bookkeeper",
     icon: FileSpreadsheet,
   },
+  {
+    title: "Sales Invoices",
+    href: "/bookkeeper/sales-invoices",
+    icon: FileSpreadsheet,
+  },
+  {
+    title: "Purchase Invoices",
+    href: "/bookkeeper/purchase-invoices",
+    icon: FileSpreadsheet,
+  },
+  {
+    title: "Payments",
+    href: "/bookkeeper/payments",
+    icon: FileSpreadsheet,
+  },
 ];
 
 export function Sidebar() {
@@ -135,9 +155,9 @@ export function Sidebar() {
         collapsed ? "w-20" : "w-60"
       )}
     >
-      <div>
+      <div className="flex flex-col h-full overflow-hidden">
         {/* Brand Header */}
-        <div className="flex items-center gap-2.5 px-2 py-2 mb-6">
+        <div className="flex items-center gap-2.5 px-2 py-2 mb-6 shrink-0">
           <div className="w-8 h-8 rounded-xl bg-[#0d382c] flex items-center justify-center text-white shrink-0 shadow-xs">
             <Layers className="w-4 h-4 text-emerald-200" />
           </div>
@@ -154,7 +174,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Sections */}
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto flex-1 pr-2 pb-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-zinc-800">
           {/* Main Menu */}
           <div>
             {!collapsed && (
@@ -279,7 +299,7 @@ export function Sidebar() {
       </div>
 
       {/* Bottom Area: Clean status & Collapse button */}
-      <div className="flex flex-col gap-2.5 pt-3 border-t border-slate-100 dark:border-zinc-800">
+      <div className="flex flex-col gap-2.5 pt-3 border-t border-slate-100 dark:border-zinc-800 shrink-0 mt-2">
         {!collapsed && (
           <div className="p-3.5 rounded-2xl bg-[#0d382c] text-white space-y-1">
             <div className="flex items-center justify-between">

@@ -119,6 +119,9 @@ model Item {
   workOrders      WorkOrder[]
   materialScans   MaterialScanLog[]
   purchaseOrderItems PurchaseOrderItem[]
+  purchaseReceiptItems PurchaseReceiptItem[]
+  salesInvoiceItems SalesInvoiceItem[]
+  purchaseInvoiceItems PurchaseInvoiceItem[]
 }
 
 model Workstation {
@@ -148,6 +151,7 @@ model Batch {
 
   cartons       CartonLabel[]
   materialScans MaterialScanLog[]
+  purchaseReceiptItems PurchaseReceiptItem[]
 }
 
 // ----------------------------------------------------
@@ -164,6 +168,9 @@ model Supplier {
   updatedAt DateTime @updatedAt
 
   purchaseOrders PurchaseOrder[]
+  purchaseReceipts PurchaseReceipt[]
+  purchaseInvoices PurchaseInvoice[]
+  paymentEntries PaymentEntry[]
 }
 
 model SupplierLead {
@@ -193,6 +200,7 @@ model PurchaseOrder {
   updatedAt   DateTime @updatedAt
 
   items PurchaseOrderItem[]
+  receipts PurchaseReceipt[]
 }
 
 model PurchaseOrderItem {
@@ -204,6 +212,36 @@ model PurchaseOrderItem {
   qty             Float
   rate            Decimal
   amount          Decimal
+}
+
+model PurchaseReceipt {
+  id              String   @id @default(cuid())
+  receiptNumber   String   @unique 
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+  supplierId      String
+  supplier        Supplier @relation(fields: [supplierId], references: [id])
+  receiptDate     DateTime @default(now())
+  status          String   @default("DRAFT") // DRAFT, SUBMITTED, CANCELLED
+  totalAmount     Decimal  @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items PurchaseReceiptItem[]
+}
+
+model PurchaseReceiptItem {
+  id                String          @id @default(cuid())
+  purchaseReceiptId String
+  purchaseReceipt   PurchaseReceipt @relation(fields: [purchaseReceiptId], references: [id], onDelete: Cascade)
+  itemId            String
+  item              Item            @relation(fields: [itemId], references: [id])
+  batchId           String?
+  batch             Batch?          @relation(fields: [batchId], references: [id])
+  qty               Float
+  rate              Decimal
+  amount            Decimal
 }
 
 // ----------------------------------------------------
@@ -257,6 +295,7 @@ model SalesOrder {
   items         SalesOrderItem[]
   workOrders    WorkOrder[]
   deliveryNotes DeliveryNote[]
+  salesInvoices SalesInvoice[]
 }
 
 model SalesOrderItem {
@@ -391,6 +430,7 @@ model DeliveryNote {
   updatedAt       DateTime   @updatedAt
 
   cartons CartonLabel[]
+  salesInvoices SalesInvoice[]
 }
 
 model TallySyncLog {
@@ -476,6 +516,8 @@ model Customer {
   users       User[]       @relation("CustomerUsers")
   salesOrders SalesOrder[] @relation("CustomerOrders")
   followUps   CustomerFollowUp[]
+  salesInvoices SalesInvoice[]
+  paymentEntries PaymentEntry[]
 }
 
 model CustomerFollowUp {
@@ -506,4 +548,91 @@ model Notification {
   actionUrl   String?  // URL to redirect the user when clicked
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ----------------------------------------------------
+// 10. ACCOUNTS & INVOICING
+// ----------------------------------------------------
+model SalesInvoice {
+  id              String         @id @default(cuid())
+  invoiceNumber   String         @unique
+  salesOrderId    String?
+  salesOrder      SalesOrder?    @relation(fields: [salesOrderId], references: [id])
+  deliveryNoteId  String?
+  deliveryNote    DeliveryNote?  @relation(fields: [deliveryNoteId], references: [id])
+  customerId      String
+  customer        Customer       @relation(fields: [customerId], references: [id])
+  invoiceDate     DateTime       @default(now())
+  dueDate         DateTime
+  status          String         @default("DRAFT") // DRAFT, UNPAID, PARTIAL, PAID, CANCELLED
+  totalAmount     Decimal        @default(0)
+  outstanding     Decimal        @default(0)
+  irn             String?        // E-Invoice IRN
+  irnQrCode       String?
+  ewayBillNumber  String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  items SalesInvoiceItem[]
+  payments PaymentEntry[]
+}
+
+model SalesInvoiceItem {
+  id             String       @id @default(cuid())
+  salesInvoiceId String
+  salesInvoice   SalesInvoice @relation(fields: [salesInvoiceId], references: [id], onDelete: Cascade)
+  itemId         String
+  item           Item         @relation(fields: [itemId], references: [id])
+  qty            Float
+  rate           Decimal
+  amount         Decimal
+}
+
+model PurchaseInvoice {
+  id              String         @id @default(cuid())
+  invoiceNumber   String         @unique
+  supplierId      String
+  supplier        Supplier       @relation(fields: [supplierId], references: [id])
+  invoiceDate     DateTime       @default(now())
+  dueDate         DateTime
+  status          String         @default("DRAFT") // DRAFT, UNPAID, PARTIAL, PAID, CANCELLED
+  totalAmount     Decimal        @default(0)
+  outstanding     Decimal        @default(0)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  items PurchaseInvoiceItem[]
+  paymentEntries PaymentEntry[]
+}
+
+model PurchaseInvoiceItem {
+  id                String          @id @default(cuid())
+  purchaseInvoiceId String
+  purchaseInvoice   PurchaseInvoice @relation(fields: [purchaseInvoiceId], references: [id], onDelete: Cascade)
+  itemId            String
+  item              Item            @relation(fields: [itemId], references: [id])
+  qty               Float
+  rate              Decimal
+  amount            Decimal
+}
+
+model PaymentEntry {
+  id              String        @id @default(cuid())
+  paymentNumber   String        @unique
+  partyType       String        // CUSTOMER, SUPPLIER
+  customerId      String?
+  customer        Customer?     @relation(fields: [customerId], references: [id])
+  supplierId      String?
+  supplier        Supplier?     @relation(fields: [supplierId], references: [id])
+  salesInvoiceId  String?
+  salesInvoice    SalesInvoice? @relation(fields: [salesInvoiceId], references: [id])
+  purchaseInvoiceId String?
+  purchaseInvoice PurchaseInvoice? @relation(fields: [purchaseInvoiceId], references: [id])
+  paymentDate     DateTime      @default(now())
+  modeOfPayment   String        // BANK_TRANSFER, CASH, CHEQUE, UPI
+  referenceNumber String?
+  amount          Decimal
+  status          String        @default("SUBMITTED") // DRAFT, SUBMITTED, CANCELLED
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 }

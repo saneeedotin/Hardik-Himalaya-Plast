@@ -82,7 +82,7 @@ export default async function CustomersListPage() {
                         {latestFollowUp?.expectedNextOrderDate ? (
                           <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-500/10 px-2 py-1 rounded w-max text-xs">
                             <Calendar className="w-3 h-3" />
-                            {latestFollowUp.expectedNextOrderDate.toLocaleDateString()}
+                            {latestFollowUp.expectedNextOrderDate.toLocaleDateString("en-IN")}
                           </div>
                         ) : (
                           <span className="text-slate-400 text-xs">Unknown</span>

@@ -92,7 +92,7 @@ export default async function Customer360Page({ params }: { params: Promise<{ id
                     <li key={order.id} className="p-4 px-6 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                       <div>
                         <div className="font-medium text-slate-900 dark:text-white">{order.orderNumber}</div>
-                        <div className="text-xs text-slate-500 mt-1">Due: {new Date(order.deliveryDate).toLocaleDateString()}</div>
+                        <div className="text-xs text-slate-500 mt-1">Due: {new Date(order.deliveryDate).toLocaleDateString("en-IN")}</div>
                       </div>
                       <div className="text-right">
                         <div className="text-sm font-semibold text-slate-900 dark:text-white">₹{order.totalAmount.toString()}</div>
@@ -135,7 +135,7 @@ export default async function Customer360Page({ params }: { params: Promise<{ id
                       {fu.expectedNextOrderDate && (
                         <div className="mt-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                           <CheckCircle2 className="w-3.5 h-3.5" />
-                          Expected next order: {new Date(fu.expectedNextOrderDate).toLocaleDateString()}
+                          Expected next order: {new Date(fu.expectedNextOrderDate).toLocaleDateString("en-IN")}
                         </div>
                       )}
                     </div>

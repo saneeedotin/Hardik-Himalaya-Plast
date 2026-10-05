@@ -45,7 +45,7 @@ export default async function PurchaseOrderDetailsPage({ params }: { params: Pro
               </span>
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4"/> 
-                Date: {new Date(po.createdAt).toLocaleDateString()}
+                Date: {new Date(po.createdAt).toLocaleDateString("en-IN")}
               </span>
             </div>
           </div>

@@ -57,7 +57,7 @@ export default async function OrdersListPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-slate-400" />
-                        {new Date(order.createdAt).toLocaleDateString()}
+                        {new Date(order.createdAt).toLocaleDateString("en-IN")}
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium">

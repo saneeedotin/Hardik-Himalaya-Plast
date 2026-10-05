@@ -659,7 +659,7 @@ export function ExecutiveDashboard({ initialData }: DashboardProps) {
                           </div>
                           <span className="text-xs text-slate-500 dark:text-slate-400 block mt-0.5">
                             {order.customerName} • Delivery:{" "}
-                            {new Date(order.deliveryDate).toLocaleDateString()}
+                            {new Date(order.deliveryDate).toLocaleDateString("en-IN")}
                           </span>
                         </div>
                         <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
@@ -831,7 +831,7 @@ export function ExecutiveDashboard({ initialData }: DashboardProps) {
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 mt-1">
-                          Customer: <strong className="text-slate-800 dark:text-slate-200">{order.customerName}</strong> • Delivery: {new Date(order.deliveryDate).toLocaleDateString()}
+                          Customer: <strong className="text-slate-800 dark:text-slate-200">{order.customerName}</strong> • Delivery: {new Date(order.deliveryDate).toLocaleDateString("en-IN")}
                         </p>
                       </div>
 
@@ -1020,7 +1020,7 @@ export function ExecutiveDashboard({ initialData }: DashboardProps) {
                       <span className="text-slate-400">Expected Reorder:</span>
                       <span className="font-semibold">
                         {fu.expectedNextOrderDate
-                          ? new Date(fu.expectedNextOrderDate).toLocaleDateString()
+                          ? new Date(fu.expectedNextOrderDate).toLocaleDateString("en-IN")
                           : "Not set"}
                       </span>
                     </div>

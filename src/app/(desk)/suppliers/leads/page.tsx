@@ -85,7 +85,7 @@ export default async function SupplierLeadsPage() {
                       {lead.nextFollowUp ? (
                         <div className="flex items-center gap-1.5">
                           <CalendarDays className="w-3.5 h-3.5" />
-                          <span>{new Date(lead.nextFollowUp).toLocaleDateString()}</span>
+                          <span>{new Date(lead.nextFollowUp).toLocaleDateString("en-IN")}</span>
                         </div>
                       ) : "-"}
                     </td>
