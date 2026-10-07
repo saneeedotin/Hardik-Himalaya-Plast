@@ -35,7 +35,7 @@ async function main() {
     include: { items: true }
   });
   
-  if (so) {
+  if (so && so.customerId) {
     const si = await prisma.salesInvoice.create({
       data: {
         invoiceNumber: "INV-2026-00001",

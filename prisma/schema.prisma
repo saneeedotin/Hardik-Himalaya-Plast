@@ -122,6 +122,7 @@ model Item {
   purchaseReceiptItems PurchaseReceiptItem[]
   salesInvoiceItems SalesInvoiceItem[]
   purchaseInvoiceItems PurchaseInvoiceItem[]
+  qcTemplate    String?      // Stores JSON array of QC parameters (e.g. name, type, nominal, tolerance)
 }
 
 model Workstation {
@@ -384,14 +385,10 @@ model QualityInspection {
   batchNumber   String
   status        String   @default("DRAFT") // DRAFT, PASS, REJECT, SCRAP, REWORK
   sampleSize    Int      @default(5)
-  pinSize       Float?
-  width         Float?
-  legThickness  Float?
-  linearWeight  Float?
-  fitTestResult String? 
   inspectorName String
   inspectedAt   DateTime @default(now())
   reworkNotes   String?
+  qcData        String?  // JSON string storing dynamic QC reading values
 }
 
 // ----------------------------------------------------

@@ -775,11 +775,13 @@ export async function quickSubmitQC(
       batchNumber: wo?.fgBatchNumber || `BATCH-FG-${new Date().getFullYear()}-00101`,
       status: data.status || "PASS",
       sampleSize: 5,
-      pinSize: data.pinSize || 4.2,
-      width: data.width || 18.5,
-      legThickness: data.legThickness || 1.8,
-      linearWeight: data.linearWeight || 78.5,
-      fitTestResult: data.fitTestResult || "PASS",
+      qcData: JSON.stringify({
+        pinSize: data.pinSize || 4.2,
+        width: data.width || 18.5,
+        legThickness: data.legThickness || 1.8,
+        linearWeight: data.linearWeight || 78.5,
+        fitTest: data.fitTestResult || "PASS - Snug Fit",
+      }),
       inspectorName: data.inspectorName || "Param (Quality Lead)",
     },
   });

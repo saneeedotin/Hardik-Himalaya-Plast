@@ -41,7 +41,7 @@ export async function createPurchaseInvoice(formData: FormData) {
   });
 
   revalidatePath("/bookkeeper/purchase-invoices");
-  return inv;
+  return inv.id;
 }
 
 export async function submitPurchaseInvoice(id: string) {
@@ -51,5 +51,5 @@ export async function submitPurchaseInvoice(id: string) {
   });
   revalidatePath("/bookkeeper/purchase-invoices");
   revalidatePath(`/bookkeeper/purchase-invoices/${id}`);
-  return inv;
+  return inv.id;
 }

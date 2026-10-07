@@ -18,8 +18,8 @@ export default async function NewPaymentPage({
 
   async function handleSubmit(formData: FormData) {
     "use server";
-    const payment = await createPayment(formData);
-    redirect(`/bookkeeper/payments/${payment.id}`);
+    const paymentId = await createPayment(formData);
+    redirect(`/bookkeeper/payments/${paymentId}`);
   }
 
   return (

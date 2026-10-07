@@ -11,8 +11,8 @@ export default async function NewPurchaseInvoicePage() {
 
   async function handleSubmit(formData: FormData) {
     "use server";
-    const invoice = await createPurchaseInvoice(formData);
-    redirect(`/bookkeeper/purchase-invoices/${invoice.id}`);
+    const invoiceId = await createPurchaseInvoice(formData);
+    redirect(`/bookkeeper/purchase-invoices/${invoiceId}`);
   }
 
   return (

@@ -52,7 +52,7 @@ export async function createPayment(formData: FormData) {
   });
 
   revalidatePath("/bookkeeper/payments");
-  return payment;
+  return payment.id;
 }
 
 export async function submitPayment(id: string) {
@@ -62,5 +62,5 @@ export async function submitPayment(id: string) {
   });
   revalidatePath("/bookkeeper/payments");
   revalidatePath(`/bookkeeper/payments/${id}`);
-  return payment;
+  return payment.id;
 }

@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { createWorkOrder } from "../actions";
+import { createWorkOrder, getBOMForItem } from "../actions";
 import { getItems } from "@/app/(desk)/items/actions";
 import { getSalesOrders } from "@/app/(desk)/orders/actions";
+import { Layers } from "lucide-react";
 
 export default function NewWorkOrderPage() {
   const router = useRouter();
@@ -23,6 +24,7 @@ export default function NewWorkOrderPage() {
     plannedQty: "",
     fgBatchNumber: "",
   });
+  const [bom, setBom] = useState<any>(null);
 
   useEffect(() => {
     async function load() {
@@ -33,6 +35,36 @@ export default function NewWorkOrderPage() {
     }
     load();
   }, []);
+
+  useEffect(() => {
+    async function loadBom() {
+      if (formData.fgItemId) {
+        const b = await getBOMForItem(formData.fgItemId);
+        setBom(b);
+      } else {
+        setBom(null);
+      }
+    }
+    loadBom();
+  }, [formData.fgItemId]);
+
+  const handleSalesOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const soId = e.target.value;
+    const so = orders.find((o) => o.id === soId);
+    
+    if (so && so.items && so.items.length > 0) {
+      // Auto-populate based on the first item of the sales order for simplicity
+      const targetItem = so.items[0];
+      setFormData({
+        ...formData,
+        salesOrderId: soId,
+        fgItemId: targetItem.itemId,
+        plannedQty: targetItem.quantity.toString(),
+      });
+    } else {
+      setFormData({ ...formData, salesOrderId: soId });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +135,7 @@ export default function NewWorkOrderPage() {
               <label className="text-sm font-semibold text-slate-900 dark:text-white">Linked Sales Order (Optional)</label>
               <select
                 value={formData.salesOrderId}
-                onChange={(e) => setFormData({ ...formData, salesOrderId: e.target.value })}
+                onChange={handleSalesOrderChange}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-black text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
               >
                 <option value="">None (Make to Stock)</option>
@@ -138,6 +170,47 @@ export default function NewWorkOrderPage() {
               />
             </div>
           </div>
+
+          {/* Production Plan BOM Projection */}
+          {bom && formData.plannedQty && Number(formData.plannedQty) > 0 && (
+            <div className="mt-8 pt-8 border-t border-slate-100 dark:border-zinc-800">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <Layers className="w-4 h-4 text-indigo-500" />
+                Raw Material Requirements (Production Plan)
+              </h3>
+              <div className="bg-slate-50 dark:bg-zinc-900/50 rounded-xl border border-slate-200/60 dark:border-zinc-800 overflow-hidden">
+                <table className="w-full text-left text-sm whitespace-nowrap">
+                  <thead className="bg-slate-100/50 dark:bg-zinc-900 text-slate-500 dark:text-slate-400 font-medium">
+                    <tr>
+                      <th className="px-4 py-3">Raw Material</th>
+                      <th className="px-4 py-3 text-right">Qty Per Unit</th>
+                      <th className="px-4 py-3 text-right">Target Output</th>
+                      <th className="px-4 py-3 text-right">Required (inc Scrap)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                    {bom.materials.map((mat: any) => {
+                      const multiplier = Number(formData.plannedQty) / (bom.outputQty > 0 ? bom.outputQty : 1);
+                      const scrapMultiplier = 1 / (1 - (bom.scrapFactor || 0.025));
+                      const required = Math.round(mat.qtyPerUnit * multiplier * scrapMultiplier * 100) / 100;
+                      
+                      return (
+                        <tr key={mat.id} className="text-slate-700 dark:text-slate-300">
+                          <td className="px-4 py-3 font-medium">{mat.rmItem.name}</td>
+                          <td className="px-4 py-3 text-right">{mat.qtyPerUnit} {mat.rmItem.uom}</td>
+                          <td className="px-4 py-3 text-right font-medium">{Number(formData.plannedQty).toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right font-bold text-indigo-600 dark:text-indigo-400">
+                            {required.toLocaleString()} {mat.rmItem.uom}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
         </div>
         
         <div className="px-6 py-4 md:px-8 border-t border-slate-100 dark:border-zinc-800 flex justify-end gap-3 bg-slate-50 dark:bg-slate-900/50">

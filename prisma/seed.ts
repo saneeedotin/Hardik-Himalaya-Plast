@@ -183,6 +183,13 @@ async function main() {
       hsnCode: "39169090",
       standardCost: 34.5,
       minStockLevel: 2500,
+      qcTemplate: JSON.stringify([
+        { id: "pinSize", name: "Pin Size", type: "number", nominal: 4.00, tolerance: 0.05, uom: "mm" },
+        { id: "width", name: "Width", type: "number", nominal: 12.00, tolerance: 0.10, uom: "mm" },
+        { id: "legThickness", name: "Leg Thickness", type: "number", nominal: 1.50, tolerance: 0.05, uom: "mm" },
+        { id: "linearWeight", name: "Linear Weight", type: "number", nominal: 75.0, tolerance: 1.0, uom: "g/m" },
+        { id: "fitTest", name: "Sash Fit Test", type: "select", options: ["PASS - Snug Fit", "TIGHT - Swollen", "LOOSE - Slips"] }
+      ]),
     },
   });
 
@@ -195,6 +202,13 @@ async function main() {
       hsnCode: "39169090",
       standardCost: 48.0,
       minStockLevel: 2000,
+      qcTemplate: JSON.stringify([
+        { id: "pinSize", name: "Pin Size", type: "number", nominal: 4.10, tolerance: 0.05, uom: "mm" },
+        { id: "width", name: "Width", type: "number", nominal: 12.20, tolerance: 0.10, uom: "mm" },
+        { id: "legThickness", name: "Leg Thickness", type: "number", nominal: 1.60, tolerance: 0.05, uom: "mm" },
+        { id: "linearWeight", name: "Linear Weight", type: "number", nominal: 78.0, tolerance: 1.0, uom: "g/m" },
+        { id: "fitTest", name: "Sash Fit Test", type: "select", options: ["PASS - Snug Fit", "TIGHT - Swollen", "LOOSE - Slips"] }
+      ]),
     },
   });
 
@@ -207,6 +221,11 @@ async function main() {
       hsnCode: "39169090",
       standardCost: 26.5,
       minStockLevel: 3000,
+      qcTemplate: JSON.stringify([
+        { id: "outerDia", name: "Outer Diameter", type: "number", nominal: 8.00, tolerance: 0.15, uom: "mm" },
+        { id: "innerDia", name: "Inner Diameter", type: "number", nominal: 6.00, tolerance: 0.10, uom: "mm" },
+        { id: "flexibility", name: "Flexibility Test", type: "select", options: ["PASS - No Cracks", "FAIL - Cracked"] }
+      ]),
     },
   });
 
@@ -400,11 +419,13 @@ async function main() {
       batchNumber: batchFG1.batchNumber,
       status: "PASS",
       sampleSize: 5,
-      pinSize: 4.02, // nominal 4.0
-      width: 12.05, // nominal 12.0
-      legThickness: 1.49, // nominal 1.5
-      linearWeight: 74.8, // nominal 75.0 g/m
-      fitTestResult: "PASS",
+      qcData: JSON.stringify({
+        pinSize: 4.02,
+        width: 12.05,
+        legThickness: 1.49,
+        linearWeight: 74.8,
+        fitTest: "PASS - Snug Fit"
+      }),
       inspectorName: "Ramesh Kumar",
       inspectedAt: new Date(Date.now() - 3 * 3600000),
     },
@@ -417,11 +438,13 @@ async function main() {
       batchNumber: batchFG2.batchNumber,
       status: "REWORK",
       sampleSize: 5,
-      pinSize: 4.15,
-      width: 12.35,
-      legThickness: 1.62,
-      linearWeight: 79.2,
-      fitTestResult: "TIGHT_FIT",
+      qcData: JSON.stringify({
+        pinSize: 4.15,
+        width: 12.35,
+        legThickness: 1.62,
+        linearWeight: 79.2,
+        fitTest: "TIGHT - Swollen"
+      }),
       inspectorName: "Ramesh Kumar",
       inspectedAt: new Date(Date.now() - 1 * 3600000),
       reworkNotes: "Die temperature too high at 192°C causing profile swelling. Reduce zone 3 to 184°C.",

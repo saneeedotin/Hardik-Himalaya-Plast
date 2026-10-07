@@ -28,10 +28,12 @@ export function can(user: SessionUser | null, resource: string, action: string):
   return false;
 }
 
+import { redirect } from "next/navigation";
+
 export async function requirePermission(resource: string, action: string) {
   const session = await getSession();
   if (!session) {
-    throw new Error("Unauthorized");
+    redirect("/login");
   }
 
   if (!can(session.user as unknown as SessionUser, resource, action)) {

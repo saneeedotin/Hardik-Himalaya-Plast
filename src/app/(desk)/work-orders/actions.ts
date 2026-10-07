@@ -69,11 +69,11 @@ export async function updateWorkOrder(id: string, data: any) {
   const wo = await prisma.workOrder.update({
     where: { id },
     data: {
-      salesOrderId: data.salesOrderId || null,
-      fgItemId: data.fgItemId,
-      plannedQty: Number(data.plannedQty),
-      status: data.status,
-      fgBatchNumber: data.fgBatchNumber || null,
+      salesOrderId: data.salesOrderId !== undefined ? (data.salesOrderId || null) : oldWo.salesOrderId,
+      fgItemId: data.fgItemId !== undefined ? data.fgItemId : oldWo.fgItemId,
+      plannedQty: data.plannedQty !== undefined ? Number(data.plannedQty) : oldWo.plannedQty,
+      status: data.status !== undefined ? data.status : oldWo.status,
+      fgBatchNumber: data.fgBatchNumber !== undefined ? (data.fgBatchNumber || null) : oldWo.fgBatchNumber,
     },
   });
 
@@ -102,4 +102,16 @@ export async function deleteWorkOrder(id: string) {
   await requirePermission("WorkOrders", "delete");
   await prisma.workOrder.delete({ where: { id } });
   revalidatePath("/work-orders");
+}
+
+export async function getBOMForItem(itemId: string) {
+  const bom = await prisma.bOM.findFirst({
+    where: { fgItemId: itemId },
+    include: {
+      materials: {
+        include: { rmItem: true }
+      }
+    }
+  });
+  return bom ? serializeData(bom) : null;
 }

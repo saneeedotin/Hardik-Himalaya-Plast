@@ -23,6 +23,7 @@ import {
   Package,
   Server,
   ArrowRightLeft,
+  LogOut,
   FileSpreadsheet,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
@@ -143,6 +144,11 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { theme, toggleTheme } = useTheme();
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -315,22 +321,33 @@ export function Sidebar() {
         )}
 
         <div className="flex items-center justify-between px-1 py-0.5">
-          <button
-            onClick={toggleTheme}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            title="Toggle Theme"
-            aria-label="Toggle Theme"
-          >
-            {mounted ? (
-              theme === "dark" ? (
-                <Sun className="w-4 h-4 text-amber-400" />
+          <div className="flex gap-1 items-center">
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+              title="Logout"
+              aria-label="Logout"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+
+            <button
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              title="Toggle Theme"
+              aria-label="Toggle Theme"
+            >
+              {mounted ? (
+                theme === "dark" ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-500" />
+                )
               ) : (
-                <Moon className="w-4 h-4 text-slate-500" />
-              )
-            ) : (
-              <span className="w-4 h-4 block" />
-            )}
-          </button>
+                <span className="w-4 h-4 block" />
+              )}
+            </button>
+          </div>
 
           <button
             onClick={() => setCollapsed(!collapsed)}
