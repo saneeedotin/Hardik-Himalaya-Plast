@@ -140,7 +140,7 @@ export default function NewWorkOrderPage() {
               >
                 <option value="">None (Make to Stock)</option>
                 {orders.map(o => (
-                  <option key={o.id} value={o.id}>{o.orderNumber} - {o.customer.name}</option>
+                  <option key={o.id} value={o.id}>{o.orderNumber} - {o.customer?.name || o.customerName}</option>
                 ))}
               </select>
             </div>

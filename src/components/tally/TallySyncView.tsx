@@ -14,10 +14,10 @@ export function TallySyncView({
   orders,
   tallyLogs,
 }: {
-  orders: any[];
-  tallyLogs: any[];
+  orders: Record<string, any>[];
+  tallyLogs: Record<string, any>[];
 }) {
-  const [selectedOrder, setSelectedOrder] = useState<any>(orders[0] || null);
+  const [selectedOrder, setSelectedOrder] = useState<Record<string, any> | null>(orders[0] || null);
   const [generatedXml, setGeneratedXml] = useState<string>("");
   const [isExporting, setIsExporting] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -219,7 +219,7 @@ export function TallySyncView({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
-              {logs.map((log: any) => (
+              {logs.map((log: Record<string, any>) => (
                 <tr key={log.id}>
                   <td className="py-2 px-3 font-medium">
                     {log.documentType.replace(/_/g, " ")}

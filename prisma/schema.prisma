@@ -562,6 +562,11 @@ model SalesInvoice {
   invoiceDate     DateTime       @default(now())
   dueDate         DateTime
   status          String         @default("DRAFT") // DRAFT, UNPAID, PARTIAL, PAID, CANCELLED
+  subtotalAmount  Decimal        @default(0)
+  taxAmount       Decimal        @default(0)
+  cgstAmount      Decimal        @default(0)
+  sgstAmount      Decimal        @default(0)
+  igstAmount      Decimal        @default(0)
   totalAmount     Decimal        @default(0)
   outstanding     Decimal        @default(0)
   irn             String?        // E-Invoice IRN
@@ -583,6 +588,9 @@ model SalesInvoiceItem {
   qty            Float
   rate           Decimal
   amount         Decimal
+  taxRate        Float        @default(18.0)
+  taxAmount      Decimal      @default(0)
+  totalAmount    Decimal      @default(0)
 }
 
 model PurchaseInvoice {
@@ -593,6 +601,11 @@ model PurchaseInvoice {
   invoiceDate     DateTime       @default(now())
   dueDate         DateTime
   status          String         @default("DRAFT") // DRAFT, UNPAID, PARTIAL, PAID, CANCELLED
+  subtotalAmount  Decimal        @default(0)
+  taxAmount       Decimal        @default(0)
+  cgstAmount      Decimal        @default(0)
+  sgstAmount      Decimal        @default(0)
+  igstAmount      Decimal        @default(0)
   totalAmount     Decimal        @default(0)
   outstanding     Decimal        @default(0)
   createdAt       DateTime       @default(now())
@@ -611,6 +624,9 @@ model PurchaseInvoiceItem {
   qty               Float
   rate              Decimal
   amount            Decimal
+  taxRate           Float        @default(18.0)
+  taxAmount         Decimal      @default(0)
+  totalAmount       Decimal      @default(0)
 }
 
 model PaymentEntry {

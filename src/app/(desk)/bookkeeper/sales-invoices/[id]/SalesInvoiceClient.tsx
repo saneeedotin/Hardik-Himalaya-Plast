@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { submitSalesInvoice } from "../actions";
 
-export function SalesInvoiceClient({ invoice }: { invoice: any }) {
+export function SalesInvoiceClient({ invoice }: { invoice: Record<string, any> }) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,8 +24,12 @@ export function SalesInvoiceClient({ invoice }: { invoice: any }) {
       setError(null);
       await submitSalesInvoice(invoice.id);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Failed to submit invoice");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to submit invoice");
+      } else {
+        setError("Failed to submit invoice");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -102,7 +106,7 @@ export function SalesInvoiceClient({ invoice }: { invoice: any }) {
               {invoice.items.length === 0 ? (
                 <div className="text-sm text-slate-500 py-4 text-center">No items on this invoice.</div>
               ) : (
-                invoice.items.map((item: any) => (
+                invoice.items.map((item: Record<string, any>) => (
                   <div key={item.id} className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center py-2 border-b border-slate-50 dark:border-zinc-800/50 last:border-0">
                     <div className="col-span-5">
                       <div className="font-semibold text-slate-900 dark:text-white text-sm">
@@ -131,12 +135,38 @@ export function SalesInvoiceClient({ invoice }: { invoice: any }) {
                 <div className="w-48 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Subtotal</span>
-                    <span className="font-medium text-slate-900 dark:text-white">₹{invoice.totalAmount.toString()}</span>
+                    <span className="font-medium text-slate-900 dark:text-white">₹{(Number(invoice.subtotalAmount) > 0 ? invoice.subtotalAmount : invoice.totalAmount).toString()}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Taxes</span>
-                    <span className="font-medium text-slate-900 dark:text-white">₹0.00</span>
-                  </div>
+                  {Number(invoice.cgstAmount || 0) > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">CGST (9%)</span>
+                      <span className="font-medium text-slate-900 dark:text-white">₹{invoice.cgstAmount.toString()}</span>
+                    </div>
+                  )}
+                  {Number(invoice.sgstAmount || 0) > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">SGST (9%)</span>
+                      <span className="font-medium text-slate-900 dark:text-white">₹{invoice.sgstAmount.toString()}</span>
+                    </div>
+                  )}
+                  {Number(invoice.igstAmount || 0) > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">IGST (18%)</span>
+                      <span className="font-medium text-slate-900 dark:text-white">₹{invoice.igstAmount.toString()}</span>
+                    </div>
+                  )}
+                  {Number(invoice.taxAmount || 0) > 0 && Number(invoice.cgstAmount || 0) === 0 && Number(invoice.igstAmount || 0) === 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Taxes</span>
+                      <span className="font-medium text-slate-900 dark:text-white">₹{invoice.taxAmount.toString()}</span>
+                    </div>
+                  )}
+                  {Number(invoice.taxAmount || 0) === 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-slate-500">Taxes</span>
+                      <span className="font-medium text-slate-900 dark:text-white">₹0.00</span>
+                    </div>
+                  )}
                   <div className="flex justify-between font-bold text-lg pt-2 border-t border-slate-200 dark:border-zinc-800">
                     <span className="text-slate-900 dark:text-white">Total</span>
                     <span className="text-[#0d382c] dark:text-emerald-400">₹{invoice.totalAmount.toString()}</span>

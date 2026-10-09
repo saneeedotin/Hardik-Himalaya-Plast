@@ -43,14 +43,21 @@ async function main() {
         salesOrderId: so.id,
         dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         status: "DRAFT",
-        totalAmount: so.totalAmount,
-        outstanding: so.totalAmount,
+        subtotalAmount: so.totalAmount,
+        cgstAmount: Number(so.totalAmount) * 0.09,
+        sgstAmount: Number(so.totalAmount) * 0.09,
+        taxAmount: Number(so.totalAmount) * 0.18,
+        totalAmount: Number(so.totalAmount) * 1.18,
+        outstanding: Number(so.totalAmount) * 1.18,
         items: {
           create: so.items.map(item => ({
             itemId: item.itemId,
             qty: item.qty,
             rate: item.rate,
             amount: item.amount,
+            taxRate: 18.0,
+            taxAmount: Number(item.amount) * 0.18,
+            totalAmount: Number(item.amount) * 1.18
           }))
         }
       }

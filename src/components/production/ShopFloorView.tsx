@@ -8,6 +8,10 @@ import {
   CheckCircle,
   AlertTriangle,
   UserCheck,
+  BookOpen,
+  Video,
+  FileText,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -28,6 +32,10 @@ export function ShopFloorView({ lines }: { lines: any[] }) {
   const [showDowntimeModal, setShowDowntimeModal] = useState(false);
   const [downtimeReason, setDowntimeReason] = useState("");
   const [downtimeNotes, setDowntimeNotes] = useState("");
+
+  // SOP Modal state
+  const [showSopModal, setShowSopModal] = useState(false);
+  const [activeSop, setActiveSop] = useState("emergency_shutdown");
 
   const plannedQty = activeJob?.workOrder?.plannedQty ?? 4000;
 
@@ -149,6 +157,12 @@ export function ShopFloorView({ lines }: { lines: any[] }) {
             >
               <Cpu className="w-3.5 h-3.5" /> Shift Handover
             </Link>
+            <button 
+              onClick={() => setShowSopModal(true)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center gap-1.5"
+            >
+              <BookOpen className="w-3.5 h-3.5" /> Digital SOPs
+            </button>
           </h1>
           <p className="text-xs text-slate-400 mt-0.5">
             Machine operator terminal for live extrusion telemetry and material output.
@@ -415,6 +429,113 @@ export function ShopFloorView({ lines }: { lines: any[] }) {
               >
                 {isLogging ? "Logging..." : "Confirm Downtime"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SOP Modal */}
+      {showSopModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 w-full max-w-2xl shadow-2xl border border-slate-200 dark:border-zinc-800 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">
+                <BookOpen className="w-6 h-6" />
+                <h2 className="text-xl font-bold">Standard Operating Procedures</h2>
+              </div>
+              <button onClick={() => setShowSopModal(false)} className="p-2 bg-slate-100 dark:bg-zinc-900 rounded-full hover:bg-slate-200 dark:hover:bg-zinc-800 transition-colors">
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Select a training module or safety manual to view directly on this terminal.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div 
+                onClick={() => setActiveSop("emergency_shutdown")}
+                className={`border rounded-2xl p-4 transition-colors cursor-pointer group bg-slate-50 dark:bg-zinc-900 ${activeSop === "emergency_shutdown" ? "border-blue-500 ring-1 ring-blue-500 shadow-sm" : "border-slate-200 dark:border-zinc-800 hover:border-blue-500"}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl flex items-center justify-center shrink-0">
+                    <Video className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm">Emergency Shutdown</h4>
+                    <p className="text-xs text-slate-500 mt-1">2m 45s • Video Guide</p>
+                  </div>
+                </div>
+              </div>
+
+              <div 
+                onClick={() => setActiveSop("die_change")}
+                className={`border rounded-2xl p-4 transition-colors cursor-pointer group bg-slate-50 dark:bg-zinc-900 ${activeSop === "die_change" ? "border-blue-500 ring-1 ring-blue-500 shadow-sm" : "border-slate-200 dark:border-zinc-800 hover:border-blue-500"}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center shrink-0">
+                    <Video className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm">Die Change Procedure</h4>
+                    <p className="text-xs text-slate-500 mt-1">5m 12s • Video Guide</p>
+                  </div>
+                </div>
+              </div>
+
+              <div 
+                onClick={() => setActiveSop("safety_manual")}
+                className={`border rounded-2xl p-4 transition-colors cursor-pointer group bg-slate-50 dark:bg-zinc-900 ${activeSop === "safety_manual" ? "border-blue-500 ring-1 ring-blue-500 shadow-sm" : "border-slate-200 dark:border-zinc-800 hover:border-blue-500"}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center shrink-0">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm">Safety Manual 2026</h4>
+                    <p className="text-xs text-slate-500 mt-1">12 Pages • PDF</p>
+                  </div>
+                </div>
+              </div>
+
+              <div 
+                onClick={() => setActiveSop("cleaning_log")}
+                className={`border rounded-2xl p-4 transition-colors cursor-pointer group bg-slate-50 dark:bg-zinc-900 ${activeSop === "cleaning_log" ? "border-blue-500 ring-1 ring-blue-500 shadow-sm" : "border-slate-200 dark:border-zinc-800 hover:border-blue-500"}`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center shrink-0">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm">Machine Cleaning Log</h4>
+                    <p className="text-xs text-slate-500 mt-1">2 Pages • PDF Checklist</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Embedded Viewer */}
+            <div className="w-full bg-slate-900 rounded-2xl aspect-video relative overflow-hidden mt-4 shadow-inner border border-slate-200 dark:border-zinc-800">
+               {activeSop === "emergency_shutdown" || activeSop === "die_change" ? (
+                 <video 
+                   key={activeSop} // force re-mount
+                   controls 
+                   className="w-full h-full object-cover"
+                   poster={activeSop === "emergency_shutdown" ? "https://images.unsplash.com/photo-1565793298595-6a879b1d9492?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" : "https://images.unsplash.com/photo-1580983546111-c304d9e5db3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"}
+                 >
+                   <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
+                   Your browser does not support HTML5 video.
+                 </video>
+               ) : (
+                 <div className="w-full h-full bg-white dark:bg-zinc-900 flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+                   <FileText className="w-12 h-12 mb-3 text-slate-300 dark:text-zinc-700" />
+                   <h3 className="font-bold text-slate-900 dark:text-white mb-1">PDF Viewer Loaded</h3>
+                   <p className="text-sm">In production, the PDF ({activeSop === "safety_manual" ? "Safety Manual" : "Cleaning Log"}) would be embedded here using react-pdf or an iframe.</p>
+                   <button className="mt-4 px-4 py-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-900 dark:text-white rounded-xl text-sm font-medium transition-colors">
+                     Download PDF Instead
+                   </button>
+                 </div>
+               )}
             </div>
           </div>
         </div>

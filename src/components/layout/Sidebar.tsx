@@ -25,6 +25,10 @@ import {
   ArrowRightLeft,
   LogOut,
   FileSpreadsheet,
+  Wrench,
+  Activity,
+  ScanLine,
+  Zap,
 } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
@@ -62,9 +66,29 @@ const menuItems: NavItem[] = [
     icon: Package,
   },
   {
+    title: "RM Inward (Tablet)",
+    href: "/stock/inward",
+    icon: ScanLine,
+  },
+  {
     title: "Extrusion Floor",
     href: "/production",
     icon: Cpu,
+  },
+  {
+    title: "OEE Analytics",
+    href: "/production/analytics",
+    icon: Activity,
+  },
+  {
+    title: "Energy Logs",
+    href: "/production/energy",
+    icon: Zap,
+  },
+  {
+    title: "Maintenance",
+    href: "/maintenance",
+    icon: Wrench,
   },
   {
     title: "Shift Handovers",
@@ -80,6 +104,11 @@ const menuItems: NavItem[] = [
     title: "Quality Station",
     href: "/qc",
     icon: ShieldCheck,
+  },
+  {
+    title: "Packing & Cartons",
+    href: "/packing",
+    icon: Package,
   },
   {
     title: "Dispatch Scanner",
