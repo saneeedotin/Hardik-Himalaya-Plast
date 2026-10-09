@@ -121,7 +121,43 @@ async function main() {
     },
   });
 
-  console.log("🏭 Created 2 extrusion workstation lines.");
+  const line03 = await prisma.workstation.create({
+    data: {
+      code: "LINE-03",
+      name: "Extrusion Line 03",
+      hourlyRate: 700.0,
+      status: "IDLE",
+    },
+  });
+
+  const line04 = await prisma.workstation.create({
+    data: {
+      code: "LINE-04",
+      name: "Extrusion Line 04",
+      hourlyRate: 900.0,
+      status: "IDLE",
+    },
+  });
+
+  const line05 = await prisma.workstation.create({
+    data: {
+      code: "LINE-05",
+      name: "Extrusion Line 05",
+      hourlyRate: 800.0,
+      status: "IDLE",
+    },
+  });
+
+  const line06 = await prisma.workstation.create({
+    data: {
+      code: "LINE-06",
+      name: "Extrusion Line 06",
+      hourlyRate: 600.0,
+      status: "IDLE",
+    },
+  });
+
+  console.log("🏭 Created 6 extrusion workstation lines.");
 
   // 3. Raw Materials & Finished Goods
   // Raw Materials
