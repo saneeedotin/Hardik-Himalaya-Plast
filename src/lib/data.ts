@@ -317,26 +317,19 @@ export async function getOrders() {
 
 export async function getProductionLines() {
   try {
-    const lines = await prisma.workstation.findMany({
-      include: {
-        jobCards: {
-          include: {
-            workOrder: {
-              include: {
-                fgItem: true,
-                salesOrder: true,
-              },
-            },
-            assignedUser: true,
-            inspections: true,
-          },
-        },
-      },
-      orderBy: { code: "asc" },
+    // 🚀 NEW: Fetching directly from the Laravel PHP Backend!
+    const res = await fetch("http://127.0.0.1:8000/api/workstations", {
+      cache: "no-store" 
     });
-    return serialize(lines);
+    
+    if (!res.ok) {
+      throw new Error(`Failed to fetch from PHP API: ${res.statusText}`);
+    }
+
+    const lines = await res.json();
+    return lines;
   } catch (error) {
-    console.error("Error fetching production lines:", error);
+    console.error("Error fetching production lines from PHP:", error);
     return [];
   }
 }
