@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Workstation extends Model
+class WorkOrder extends Model
 {
     use HasFactory;
 
@@ -14,10 +14,20 @@ class Workstation extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'code',
-        'name',
-        'hourly_rate',
+        'work_order_number',
+        'sales_order_id',
+        'fg_item_id',
+        'planned_qty',
+        'produced_qty',
         'status',
+        'fg_batch_number',
+        'start_date',
+        'end_date',
+    ];
+
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
     ];
 
     protected static function boot()
@@ -33,5 +43,15 @@ class Workstation extends Model
     public function jobCards()
     {
         return $this->hasMany(JobCard::class);
+    }
+
+    public function fgItem()
+    {
+        return $this->belongsTo(Item::class, 'fg_item_id');
+    }
+
+    public function salesOrder()
+    {
+        return $this->belongsTo(SalesOrder::class);
     }
 }

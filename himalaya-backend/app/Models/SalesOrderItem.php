@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Workstation extends Model
+class SalesOrderItem extends Model
 {
     use HasFactory;
 
@@ -14,10 +14,11 @@ class Workstation extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'code',
-        'name',
-        'hourly_rate',
-        'status',
+        'sales_order_id',
+        'item_id',
+        'qty',
+        'rate',
+        'amount',
     ];
 
     protected static function boot()
@@ -30,8 +31,13 @@ class Workstation extends Model
         });
     }
 
-    public function jobCards()
+    public function salesOrder()
     {
-        return $this->hasMany(JobCard::class);
+        return $this->belongsTo(SalesOrder::class);
+    }
+
+    public function item()
+    {
+        return $this->belongsTo(Item::class);
     }
 }

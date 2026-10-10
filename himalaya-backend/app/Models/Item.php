@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Workstation extends Model
+class Item extends Model
 {
     use HasFactory;
 
@@ -16,8 +16,16 @@ class Workstation extends Model
     protected $fillable = [
         'code',
         'name',
-        'hourly_rate',
-        'status',
+        'category',
+        'uom',
+        'hsn_code',
+        'standard_cost',
+        'min_stock_level',
+        'qc_template',
+    ];
+
+    protected $casts = [
+        'qc_template' => 'array',
     ];
 
     protected static function boot()
@@ -28,10 +36,5 @@ class Workstation extends Model
                 $model->{$model->getKeyName()} = (string) Str::uuid();
             }
         });
-    }
-
-    public function jobCards()
-    {
-        return $this->hasMany(JobCard::class);
     }
 }

@@ -92,7 +92,7 @@ export function DispatchScannerView({
     setScanning(true);
 
     try {
-      const res = await fetch("/api/dispatch/scan", {
+      const res = await fetch("http://127.0.0.1:8000/api/dispatch/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

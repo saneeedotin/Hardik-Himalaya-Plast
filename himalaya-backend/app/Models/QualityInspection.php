@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Workstation extends Model
+class QualityInspection extends Model
 {
     use HasFactory;
 
@@ -14,10 +14,20 @@ class Workstation extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'code',
-        'name',
-        'hourly_rate',
+        'report_number',
+        'job_card_id',
+        'batch_number',
         'status',
+        'sample_size',
+        'inspector_name',
+        'inspected_at',
+        'rework_notes',
+        'qc_data',
+    ];
+
+    protected $casts = [
+        'inspected_at' => 'datetime',
+        'qc_data' => 'array',
     ];
 
     protected static function boot()
@@ -30,8 +40,8 @@ class Workstation extends Model
         });
     }
 
-    public function jobCards()
+    public function jobCard()
     {
-        return $this->hasMany(JobCard::class);
+        return $this->belongsTo(JobCard::class);
     }
 }

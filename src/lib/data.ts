@@ -358,28 +358,11 @@ export async function getQualityInspections() {
 
 export async function getDispatchNotes() {
   try {
-    const notes = await prisma.deliveryNote.findMany({
-      include: {
-        salesOrder: {
-          include: {
-            items: {
-              include: { item: true },
-            },
-          },
-        },
-        cartons: {
-          include: {
-            batch: {
-              include: { item: true },
-            },
-            scannedBy: true,
-          },
-          orderBy: { cartonCode: "asc" },
-        },
-      },
-      orderBy: { createdAt: "desc" },
+    const res = await fetch("http://127.0.0.1:8000/api/dispatch/notes", {
+      cache: 'no-store'
     });
-    return serialize(notes);
+    if (!res.ok) return [];
+    return await res.json();
   } catch (error) {
     console.error("Error fetching dispatch notes:", error);
     return [];

@@ -9,10 +9,17 @@ class WorkstationController extends Controller
 {
     public function index()
     {
-        // Return all workstations as JSON
-        $workstations = Workstation::all();
+        $workstations = Workstation::with([
+            'jobCards' => function ($query) {
+                $query->where('status', 'ACTIVE')
+                      ->with([
+                          'workOrder' => function ($q) {
+                              $q->with(['fgItem', 'salesOrder']);
+                          }
+                      ]);
+            }
+        ])->orderBy('code', 'asc')->get();
         
-        // Map the snake_case columns back to camelCase to match our Next.js frontend exactly
         $mapped = $workstations->map(function ($ws) {
             return [
                 'id' => $ws->id,
@@ -22,6 +29,45 @@ class WorkstationController extends Controller
                 'status' => $ws->status,
                 'createdAt' => $ws->created_at,
                 'updatedAt' => $ws->updated_at,
+                // Nested mapping to match Prisma output exactly
+                'jobCards' => $ws->jobCards->map(function ($jc) {
+                    return [
+                        'id' => $jc->id,
+                        'workOrderId' => $jc->work_order_id,
+                        'workstationId' => $jc->workstation_id,
+                        'assignedUserId' => $jc->assigned_user_id,
+                        'dieId' => $jc->die_id,
+                        'status' => $jc->status,
+                        'goodQty' => (float) $jc->good_qty,
+                        'scrapQty' => (float) $jc->scrap_qty,
+                        'startedAt' => $jc->started_at,
+                        'completedAt' => $jc->completed_at,
+                        'workOrder' => $jc->workOrder ? [
+                            'id' => $jc->workOrder->id,
+                            'workOrderNumber' => $jc->workOrder->work_order_number,
+                            'salesOrderId' => $jc->workOrder->sales_order_id,
+                            'fgItemId' => $jc->workOrder->fg_item_id,
+                            'plannedQty' => (float) $jc->workOrder->planned_qty,
+                            'producedQty' => (float) $jc->workOrder->produced_qty,
+                            'status' => $jc->workOrder->status,
+                            'fgBatchNumber' => $jc->workOrder->fg_batch_number,
+                            'startDate' => $jc->workOrder->start_date,
+                            'endDate' => $jc->workOrder->end_date,
+                            'fgItem' => $jc->workOrder->fgItem ? [
+                                'id' => $jc->workOrder->fgItem->id,
+                                'code' => $jc->workOrder->fgItem->code,
+                                'name' => $jc->workOrder->fgItem->name,
+                                'category' => $jc->workOrder->fgItem->category,
+                                'uom' => $jc->workOrder->fgItem->uom,
+                            ] : null,
+                            'salesOrder' => $jc->workOrder->salesOrder ? [
+                                'id' => $jc->workOrder->salesOrder->id,
+                                'orderNumber' => $jc->workOrder->salesOrder->order_number,
+                                'customerName' => $jc->workOrder->salesOrder->customer_name,
+                            ] : null,
+                        ] : null,
+                    ];
+                }),
             ];
         });
 

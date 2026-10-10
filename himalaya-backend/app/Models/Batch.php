@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Workstation extends Model
+class Batch extends Model
 {
     use HasFactory;
 
@@ -14,10 +14,12 @@ class Workstation extends Model
     public $incrementing = false;
 
     protected $fillable = [
-        'code',
-        'name',
-        'hourly_rate',
-        'status',
+        'batch_number',
+        'item_id',
+        'quantity',
+        'uom',
+        'source',
+        'parent_batch_id',
     ];
 
     protected static function boot()
@@ -30,8 +32,8 @@ class Workstation extends Model
         });
     }
 
-    public function jobCards()
+    public function item()
     {
-        return $this->hasMany(JobCard::class);
+        return $this->belongsTo(Item::class);
     }
 }

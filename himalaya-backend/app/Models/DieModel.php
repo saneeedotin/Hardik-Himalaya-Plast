@@ -6,17 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Workstation extends Model
+class DieModel extends Model
 {
     use HasFactory;
 
+    protected $table = 'dies';
     protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
         'code',
         'name',
-        'hourly_rate',
+        'total_running_hours',
+        'maintenance_threshold_hours',
         'status',
     ];
 
@@ -32,6 +34,6 @@ class Workstation extends Model
 
     public function jobCards()
     {
-        return $this->hasMany(JobCard::class);
+        return $this->hasMany(JobCard::class, 'die_id');
     }
 }
